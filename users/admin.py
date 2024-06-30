@@ -11,3 +11,4 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(ConfirmationModel)
 class ConfirmationModelAdmin(admin.ModelAdmin):
     list_display = ['code']
+
