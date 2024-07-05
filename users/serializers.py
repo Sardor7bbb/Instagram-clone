@@ -42,7 +42,9 @@ class SignUpSerializer(serializers.ModelSerializer):
     @staticmethod
     def auth_validate(data):
         user_input = str(data['email_phone_number']).lower()
-        if user_input.endswith('@gmail.com'):
+        print(user_input)
+        #if user_input.endswith('@gmail.com'):
+        if user_input.endswith('@icloud.com'):
             data = {
                 'email': user_input,
                 'auth_type': VIA_EMAIL
