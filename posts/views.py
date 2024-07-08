@@ -117,7 +117,37 @@ class PostUpdateAPIView(APIView):
             return Response(response, status=status.HTTP_202_ACCEPTED)
         else:
             response = {
+                "status": False,
+                "message": "Invalid request",
+                "error": serializer.errors
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    serializer_class = CommentSerializer
+
+    def put(self, request, pk):
+        comment = PostCommentModel.objects.filter(pk=pk).first()
+        if not comment:
+            response = {
                 "status": True,
+                "message": "Comment not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        serializer = CommentSerializer(comment, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            self.check_object_permissions(comment, request)
+            serializer.save()
+            response = {
+                "status": True,
+                "message": "Successfully updated"
+            }
+            return Response(response, status=status.HTTP_202_ACCEPTED)
+        else:
+            response = {
+                "status": False,
                 "message": "Invalid request",
                 "error": serializer.errors
             }
