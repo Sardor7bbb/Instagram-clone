@@ -152,3 +152,24 @@ class CommentUpdateAPIView(APIView):
                 "error": serializer.errors
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def delete(self, request, pk):
+        post = PostModel.objects.filter(pk=pk)
+        if not post.first():
+            response = {
+                "status": False,
+                "messages": "Post does not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        self.check_object_permissions(post.first(), request)
+        post.delete()
+        response = {
+            "status": True,
+            "message": "Successfully deleted"
+        }
+        return Response(response, status=status.HTTP_204_NO_CONTENT)
+
