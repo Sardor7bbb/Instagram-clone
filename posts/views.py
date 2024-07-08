@@ -1,8 +1,10 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from posts.models import PostModel, PostCommentModel
+from posts.models import PostModel, PostCommentModel, PostLikeModel, CommentLikeModel
 from posts.serializers import PostSerializer, CommentSerializer
 from shared.custom_pagination import CustomPagination
 
@@ -43,5 +45,53 @@ class PostCommentCreateAPIView(generics.ListAPIView):
             serializer.save(parent_id=parent_id)
         post_id = self.kwargs.get('pk')
         serializer.save(user=self.request.user, post_id=post_id)
+
+
+class PostLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        post_like = PostLikeModel.objects.filter(post_id=pk, user=self.request.user)
+        if post_like.exists():
+            post_like.delete()
+            response = {
+                "status": True,
+                "message": "Successfully unliked"
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            PostLikeModel.objects.create(post_id=pk, user=self.request.user)
+            response = {
+                "status": True,
+                "message": "Successfully liked"
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+
+class CommentLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            comment_like = CommentLikeModel.objects.get(pk=pk)
+            comment_like.delete()
+            response = {
+                "status": True,
+                "message": "Successfully unliked from comment"
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except CommentLikeModel.DoesNotExist:
+            CommentLikeModel.objects.create(
+                comment_id=pk,
+                user=self.request.user
+            )
+            response = {
+                "status": True,
+                "message": "Successfully liked"
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+
+
 
 

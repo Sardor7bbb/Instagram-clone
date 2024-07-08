@@ -57,3 +57,5 @@ class CommentLikeModel(BaseModel):
         db_table = 'comment_likes'
         verbose_name = 'comment like'
         verbose_name_plural = 'comment likes'
+
+
