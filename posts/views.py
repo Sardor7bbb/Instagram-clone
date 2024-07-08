@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from posts.models import PostModel, PostCommentModel, PostLikeModel, CommentLikeModel
+from posts.permissions import IsOwner
 from posts.serializers import PostSerializer, CommentSerializer
 from shared.custom_pagination import CustomPagination
 
@@ -92,6 +93,32 @@ class CommentLikeAPIView(APIView):
             return Response(response, status=status.HTTP_200_OK)
 
 
+class PostUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    serializer = PostSerializer
 
+    def put(self, request, pk):
+        post = PostModel.objects.filter(pk=pk)
+        if not post.exists():
+            response = {
+                "status": True,
+                "message": "Invalid request",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
 
-
+        serializer = PostSerializer(post.first(), data=request.data, context={'request': request})
+        if serializer.is_valid():
+            self.check_object_permissions(obj=post.first(), request=request)
+            serializer.save()
+            response = {
+                "status": True,
+                "message": "Successfully updated"
+            }
+            return Response(response, status=status.HTTP_202_ACCEPTED)
+        else:
+            response = {
+                "status": True,
+                "message": "Invalid request",
+                "error": serializer.errors
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
