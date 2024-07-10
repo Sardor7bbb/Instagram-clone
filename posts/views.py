@@ -39,6 +39,7 @@ class PostCommentListView(generics.ListAPIView):
 class PostCommentCreateAPIView(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
+    queryset = PostCommentModel.objects.all()
 
     def perform_create(self, serializer):
         parent_id = serializer.data['parent']
