@@ -155,13 +155,17 @@ REST_FRAMEWORK = {
     )
 }
 
+LOGIN_URL = 'user/login/'
+LOGIN_REDIRECT_URl = '/'
+LOGOUT_REDIRECT_URL = '/'
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST'),
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS'),
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
