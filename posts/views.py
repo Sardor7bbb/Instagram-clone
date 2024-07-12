@@ -19,7 +19,27 @@ class PostListView(generics.ListAPIView):
         return PostModel.objects.all()
 
 
-class PostCreateAPIView(generics.ListAPIView):
+class UserPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return PostModel.objects.filter(user=self.request.user)
+
+
+class UserLikedPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return PostModel.objects.filter(
+            id__in=PostLikeModel.objects.filter(user=self.request.user).values_list('post_id', flat=True)
+        )
+
+
+class PostCreateAPIView(generics.CreateAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
@@ -36,17 +56,17 @@ class PostCommentListView(generics.ListAPIView):
         return PostCommentModel.objects.filter(post_id=post_id)
 
 
-class PostCommentCreateAPIView(generics.ListAPIView):
+class PostCommentCreateAPIView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
     queryset = PostCommentModel.objects.all()
 
     def perform_create(self, serializer):
-        parent_id = serializer.data['parent']
-        if parent_id:
-            serializer.save(parent_id=parent_id)
+        if serializer.is_valid():
+            print(serializer.validated_data)
         post_id = self.kwargs.get('pk')
         serializer.save(user=self.request.user, post_id=post_id)
+
 
 
 class PostLikeAPIView(APIView):
@@ -75,7 +95,7 @@ class CommentLikeAPIView(APIView):
 
     def post(self, request, pk):
         try:
-            comment_like = CommentLikeModel.objects.get(pk=pk)
+            comment_like = CommentLikeModel.objects.get(comment_id=pk)
             comment_like.delete()
             response = {
                 "status": True,
@@ -96,14 +116,14 @@ class CommentLikeAPIView(APIView):
 
 class PostUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated, IsOwner]
-    serializer = PostSerializer
+    serializer_class = PostSerializer
 
     def put(self, request, pk):
         post = PostModel.objects.filter(pk=pk)
         if not post.exists():
             response = {
                 "status": True,
-                "message": "Invalid request",
+                "message": "Post does not found",
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
 
@@ -134,9 +154,10 @@ class CommentUpdateAPIView(APIView):
         if not comment:
             response = {
                 "status": True,
-                "message": "Comment not found",
+                "message": "Comment does not found",
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
+
         serializer = CommentSerializer(comment, data=request.data, context={'request': request})
         if serializer.is_valid():
             self.check_object_permissions(comment, request)
@@ -163,7 +184,7 @@ class PostDeleteAPIView(APIView):
         if not post.first():
             response = {
                 "status": False,
-                "messages": "Post does not found",
+                "message": "Post does not found",
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
         self.check_object_permissions(post.first(), request)
@@ -173,4 +194,3 @@ class PostDeleteAPIView(APIView):
             "message": "Successfully deleted"
         }
         return Response(response, status=status.HTTP_204_NO_CONTENT)
-
