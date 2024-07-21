@@ -4,9 +4,9 @@ from .models import StoryModel, StoryViewModel, StoryReactionModel, StoryReportM
 
 @admin.register(StoryModel)
 class StoryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'media', 'caption', 'created_at', 'expire_time', 'is_active')
+    list_display = ('user', 'media', 'caption', 'created_at', 'is_active')
     search_fields = ('user__username', 'caption')
-    list_filter = ('is_active', 'expire_time')
+    list_filter = ('is_active',)
 
 
 @admin.register(StoryViewModel)
