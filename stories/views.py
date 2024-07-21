@@ -6,6 +6,7 @@ from django.views.generic import CreateView
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
+from shared.custom_pagination import CustomPagination
 from stories.models import StoryViewModel, StoryModel, StoryReactionModel, StoryReportModel
 from stories.serializers import StorySerializer, StoryViewSerializer, StoryReactionSerializer, StoryReportSerializer
 
@@ -13,7 +14,8 @@ from stories.serializers import StorySerializer, StoryViewSerializer, StoryReact
 class StoryCreateAPIView(generics.CreateAPIView):
     queryset = StoryModel.objects.all()
     serializer_class = StorySerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, expire_time=timezone.now() + timedelta(days=1), is_active=True)
@@ -22,7 +24,8 @@ class StoryCreateAPIView(generics.CreateAPIView):
 class StoryViewCreateAPIView(generics.CreateAPIView):
     queryset = StoryViewModel.objects.all()
     serializer_class = StoryViewSerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         story_id = self.request.data['story']
@@ -32,7 +35,8 @@ class StoryViewCreateAPIView(generics.CreateAPIView):
 class UserStoryListAPIView(generics.CreateAPIView):
     queryset = StoryModel.objects.all()
     serializer_class = StorySerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return StoryModel.objects.filter(user=self.request.user, expire_time__gt=timezone.now())
@@ -41,7 +45,8 @@ class UserStoryListAPIView(generics.CreateAPIView):
 class StoryViewListAPIView(generics.CreateAPIView):
     queryset = StoryViewModel.objects.all()
     serializer_class = StoryViewSerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return StoryViewModel.objects.filter(story_id=self.kwargs['story_id'])
@@ -50,7 +55,8 @@ class StoryViewListAPIView(generics.CreateAPIView):
 class StoryReactionCreateAPIView(generics.CreateAPIView):
     queryset = StoryReactionModel.objects.all()
     serializer_class = StoryReactionSerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         story_id = self.request.data['story']
@@ -61,7 +67,8 @@ class StoryReactionCreateAPIView(generics.CreateAPIView):
 class StoryReportCreateAPIView(generics.CreateAPIView):
     queryset = StoryReportModel.objects.all()
     serializer_class = StoryReportSerializer
-    pagination_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         story_id = self.request.data['story']
